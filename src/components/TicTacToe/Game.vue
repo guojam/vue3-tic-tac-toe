@@ -9,19 +9,40 @@
         </div>
         <div class="game-info">
             <div>{{ status }}</div>
-            <ol>
+            <div class="history-sort">
+                <label>
+                    <input
+                        type="radio"
+                        name="radio-sort"
+                        value="asc"
+                        v-model="sort"
+                    />ascending</label
+                >
+                <label>
+                    <input
+                        type="radio"
+                        name="radio-sort"
+                        value="desc"
+                        v-model="sort"
+                    />descending</label
+                >
+            </div>
+            <ul>
                 <li
                     v-for="(item, index) in moves"
                     :class="{ current: item.move === stepNumber }"
+                    @click="jumpTo(item.move)"
                 >
-                    <button @click="jumpTo(item.move)">{{ item.desc }}</button>
+                    step
+                    {{ sort === 'asc' ? index + 1 : moves.length - index }}:
+                    <span>{{ item.desc }}</span>
                     <span v-if="item.step.currentMove">
-                        ({{ item.step.currentMove.col }},
+                        -- ({{ item.step.currentMove.col }},
                         {{ item.step.currentMove.row }}):
-                        {{ item.step.currentMove.value }}</span
-                    >
+                        {{ item.step.currentMove.value }}
+                    </span>
                 </li>
-            </ol>
+            </ul>
         </div>
     </div>
 </template>
@@ -41,6 +62,7 @@ export default defineComponent({
             xIsNext: true,
             stepNumber: 0,
             winnerLine: [],
+            sort: 'asc',
         });
 
         const current = computed(() => state.history[state.stepNumber]);
@@ -48,7 +70,7 @@ export default defineComponent({
             const squares = current.value.squares,
                 winner = calculateWinner(squares);
             if (!squares.includes(null)) {
-                return 'Game Over';
+                return 'No one wins';
             }
             if (winner) {
                 state.winnerLine = winner.loc;
@@ -59,7 +81,7 @@ export default defineComponent({
             }
         });
         const moves = computed(() => {
-            return state.history.map((step, move) => {
+            const arr = state.history.map((step, move) => {
                 const desc = move ? 'Go to move #' + move : 'Go to game start';
                 return {
                     step,
@@ -67,6 +89,7 @@ export default defineComponent({
                     desc,
                 };
             });
+            return state.sort === 'desc' ? arr.reverse() : arr;
         });
 
         const handleClick = (i: number) => {
@@ -115,10 +138,9 @@ body {
     margin: 20px;
 }
 
-ol,
 ul {
     padding-left: 0;
-    list-style-position: inside;
+    list-style: none;
 }
 
 .board-wrap {
@@ -162,12 +184,26 @@ ul {
 }
 
 .game-info li {
-    margin: 10px 0;
+    margin-top: 5px;
 }
-.game-info li span {
+.game-info li:hover {
+    color: blue;
+    text-decoration: underline;
+}
+.game-info li span + span {
     margin-left: 10px;
 }
-.game-info li.current button {
+.game-info li.current {
     font-weight: bold;
+}
+.history-sort {
+    margin-top: 15px;
+}
+.history-sort input {
+    margin: 0 3px 0 0;
+    vertical-align: middle;
+}
+.history-sort label + label {
+    margin-left: 15px;
 }
 </style>
