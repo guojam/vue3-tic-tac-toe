@@ -42,6 +42,9 @@ export default defineComponent({
         const status = computed(() => {
             const squares = current.value.squares,
                 winner = calculateWinner(squares);
+            if (!squares.includes(null)) {
+                return 'Game Over';
+            }
             if (winner) {
                 return 'Winner: ' + winner;
             }
