@@ -16,7 +16,10 @@ function calculateWinner(squares: Array<string | null>) {
             squares[a] === squares[b] &&
             squares[a] === squares[c]
         ) {
-            return squares[a];
+            return {
+                loc: lines[i],
+                value: squares[a],
+            };
         }
     }
     return null;

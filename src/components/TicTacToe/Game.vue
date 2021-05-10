@@ -1,7 +1,11 @@
 <template>
     <div class="game">
         <div class="game-board">
-            <Board :squares="current.squares" @square-click="handleClick" />
+            <Board
+                :squares="current.squares"
+                @square-click="handleClick"
+                :winnerLine="winnerLine"
+            />
         </div>
         <div class="game-info">
             <div>{{ status }}</div>
@@ -36,6 +40,7 @@ export default defineComponent({
             history: [{ squares: Array(9).fill(null) }],
             xIsNext: true,
             stepNumber: 0,
+            winnerLine: [],
         });
 
         const current = computed(() => state.history[state.stepNumber]);
@@ -46,9 +51,12 @@ export default defineComponent({
                 return 'Game Over';
             }
             if (winner) {
-                return 'Winner: ' + winner;
+                state.winnerLine = winner.loc;
+                return 'Winner: ' + winner.value;
+            } else {
+                state.winnerLine = [];
+                return 'Next player: ' + (state.xIsNext ? 'X' : 'O');
             }
-            return 'Next player: ' + (state.xIsNext ? 'X' : 'O');
         });
         const moves = computed(() => {
             return state.history.map((step, move) => {
@@ -138,6 +146,9 @@ ul {
 
 .square:focus {
     outline: none;
+}
+.square.winner-square {
+    color: blue;
 }
 
 .game {

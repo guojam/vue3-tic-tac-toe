@@ -4,6 +4,9 @@
             v-for="(item, index) in squares"
             :item="item"
             :index="index"
+            :class="{
+                'winner-square': winnerLine && winnerLine.includes(index),
+            }"
             @click="handleClick(index)"
         />
     </div>
@@ -19,6 +22,7 @@ export default defineComponent({
     },
     props: {
         squares: Array,
+        winnerLine: Array,
     },
     setup: (props, context) => {
         const handleClick = (i: number) => {
