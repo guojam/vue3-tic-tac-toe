@@ -6,8 +6,16 @@
         <div class="game-info">
             <div>{{ status }}</div>
             <ol>
-                <li v-for="(item, index) in moves">
+                <li
+                    v-for="(item, index) in moves"
+                    :class="{ current: item.move === stepNumber }"
+                >
                     <button @click="jumpTo(item.move)">{{ item.desc }}</button>
+                    <span v-if="item.step.currentMove">
+                        ({{ item.step.currentMove.col }},
+                        {{ item.step.currentMove.row }}):
+                        {{ item.step.currentMove.value }}</span
+                    >
                 </li>
             </ol>
         </div>
@@ -17,31 +25,7 @@
 <script lang="ts">
 import { computed, defineComponent, reactive, toRefs } from 'vue';
 import Board from './Board.vue';
-
-function calculateWinner(squares) {
-    const lines = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-        const [a, b, c] = lines[i];
-        if (
-            squares[a] &&
-            squares[a] === squares[b] &&
-            squares[a] === squares[c]
-        ) {
-            return squares[a];
-        }
-    }
-    return null;
-}
-
+import { calculateLoc, calculateWinner } from './util';
 export default defineComponent({
     name: 'game',
     components: {
@@ -67,6 +51,7 @@ export default defineComponent({
             return state.history.map((step, move) => {
                 const desc = move ? 'Go to move #' + move : 'Go to game start';
                 return {
+                    step,
                     move,
                     desc,
                 };
@@ -74,7 +59,6 @@ export default defineComponent({
         });
 
         const handleClick = (i: number) => {
-            console.log('handleClick:', i);
             const history = state.history.slice(0, state.stepNumber + 1);
             const current = history[history.length - 1];
             const squares = current.squares.slice();
@@ -82,7 +66,17 @@ export default defineComponent({
                 return;
             }
             squares[i] = state.xIsNext ? 'X' : 'O';
-            state.history = history.concat([{ squares: squares }]);
+            const location = calculateLoc(i);
+            state.history = history.concat([
+                {
+                    squares,
+                    currentMove: {
+                        col: location.col,
+                        row: location.row,
+                        value: squares[i],
+                    },
+                },
+            ]);
             state.xIsNext = !state.xIsNext;
             state.stepNumber = history.length;
         };
@@ -155,5 +149,11 @@ ul {
 
 .game-info li {
     margin: 10px 0;
+}
+.game-info li span {
+    margin-left: 10px;
+}
+.game-info li.current button {
+    font-weight: bold;
 }
 </style>
